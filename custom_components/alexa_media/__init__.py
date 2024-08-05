@@ -27,9 +27,7 @@ from alexapy import (
 )
 import async_timeout
 from homeassistant import util
-from homeassistant.components.persistent_notification import (
-    async_create as async_create_persistent_notification,
-    async_dismiss as async_dismiss_persistent_notification,
+from homeassistant.components.persistent_notification import async_create, async_dismiss
 )
 from homeassistant.config_entries import SOURCE_IMPORT
 from homeassistant.const import (
@@ -1320,7 +1318,8 @@ async def async_unload_entry(hass, entry) -> bool:
             hass.data[DATA_ALEXAMEDIA].pop("services")
     if hass.data[DATA_ALEXAMEDIA].get("config_flows") == {}:
         _LOGGER.debug("Removing config_flows data")
-        async_dismiss_persistent_notification(
+        async_dismiss(
+            hass,
             f"alexa_media_{slugify(email)}{slugify((entry.data['url'])[7:])}"
         )
         hass.data[DATA_ALEXAMEDIA].pop("config_flows")
@@ -1393,7 +1392,8 @@ async def test_login_status(hass, config_entry, login) -> bool:
         elaspsed_time: str = str(datetime.now() - login.stats.get("login_timestamp"))
         api_calls: int = login.stats.get("api_calls")
         message += f"Relogin required after {elaspsed_time} and {api_calls} api calls."
-    async_create_persistent_notification(
+    async_create(
+        hass,
         title="Alexa Media Reauthentication Required",
         message=message,
         notification_id=f"alexa_media_{slugify(login.email)}{slugify(login.url[7:])}",

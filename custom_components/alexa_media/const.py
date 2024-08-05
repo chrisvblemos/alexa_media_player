@@ -62,6 +62,7 @@ EXCEPTION_TEMPLATE = "An exception of type {0} occurred. Arguments:\n{1!r}"
 DEFAULT_SCAN_INTERVAL = 60
 DEFAULT_QUEUE_DELAY = 1.5
 DEFAULT_PUBLIC_URL = ""
+DEFAULT_HASS_URL = "http://homeassistant.local:8123"
 DEFAULT_EXTENDED_ENTITY_DISCOVERY = False
 DEFAULT_DEBUG = False
 SERVICE_CLEAR_HISTORY = "clear_history"
