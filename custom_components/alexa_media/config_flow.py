@@ -61,7 +61,6 @@ from .const import (
     DEFAULT_EXTENDED_ENTITY_DISCOVERY,
     DEFAULT_HASS_URL,
     DEFAULT_PUBLIC_URL,
-    DEFAULT_HASS_URL,
     DEFAULT_QUEUE_DELAY,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
@@ -356,7 +355,7 @@ class AlexaMediaFlowHandler(config_entries.ConfigFlow):
             "Starting proxy for %s - %s.",
             hide_email(self.login.email),
             self.login.url,
-            self.config.get(CONF_HASS_URL)
+            self.config.get(CONF_HASS_URL),
         )
         if not self.proxy:
             try:
@@ -796,22 +795,11 @@ class AlexaMediaFlowHandler(config_entries.ConfigFlow):
             self.data_schema,
             {
                 vol.Required(
-                    CONF_URL, 
-                    default=self.config.get(
-                        CONF_URL, 
-                        "amazon.com")
+                    CONF_URL, default=self.config.get(CONF_URL, "amazon.com")
                 ): str,
+                vol.Required(CONF_EMAIL, default=self.config.get(CONF_EMAIL, "")): str,
                 vol.Required(
-                    CONF_EMAIL, 
-                    default=self.config.get(
-                        CONF_EMAIL, 
-                        "")
-                ): str,
-                vol.Required(
-                    CONF_PASSWORD, 
-                    default=self.config.get(
-                        CONF_PASSWORD, 
-                        "")
+                    CONF_PASSWORD, default=self.config.get(CONF_PASSWORD, "")
                 ): str,
                 vol.Required(
                     CONF_SECURITYCODE,
@@ -819,39 +807,26 @@ class AlexaMediaFlowHandler(config_entries.ConfigFlow):
                 ): str,
                 vol.Required(
                     CONF_OTPSECRET,
-                    default=self.config.get(
-                        CONF_OTPSECRET, 
-                        ""),
+                    default=self.config.get(CONF_OTPSECRET, ""),
                 ): str,
                 vol.Required(
-                    CONF_HASS_URL, 
-                    default=self.config.get(
-                        CONF_HASS_URL,
-                        DEFAULT_HASS_URL)
+                    CONF_HASS_URL,
+                    default=self.config.get(CONF_HASS_URL, DEFAULT_HASS_URL),
                 ): str,
                 vol.Optional(
                     CONF_PUBLIC_URL,
-                    default=self.config.get(
-                        CONF_PUBLIC_URL, 
-                        DEFAULT_PUBLIC_URL),
+                    default=self.config.get(CONF_PUBLIC_URL, DEFAULT_PUBLIC_URL),
                 ): str,
                 vol.Optional(
                     CONF_INCLUDE_DEVICES,
-                    default=self.config.get(
-                        CONF_INCLUDE_DEVICES, 
-                        ""),
+                    default=self.config.get(CONF_INCLUDE_DEVICES, ""),
                 ): str,
                 vol.Optional(
                     CONF_EXCLUDE_DEVICES,
-                    default=self.config.get(
-                        CONF_EXCLUDE_DEVICES, 
-                        ""),
+                    default=self.config.get(CONF_EXCLUDE_DEVICES, ""),
                 ): str,
                 vol.Optional(
-                    CONF_SCAN_INTERVAL, 
-                    default=self.config.get(
-                        CONF_SCAN_INTERVAL, 
-                        60)
+                    CONF_SCAN_INTERVAL, default=self.config.get(CONF_SCAN_INTERVAL, 60)
                 ): int,
                 vol.Optional(
                     CONF_QUEUE_DELAY, default=self.config.get(CONF_QUEUE_DELAY, 1.5)
