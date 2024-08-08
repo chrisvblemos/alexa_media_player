@@ -54,7 +54,8 @@
     "step": {
       "init": {
         "data": {
-          "public_url": "Public URL to access Home Assistant (including trailing '/')",
+          "hass_url": "Public URL to access Home Assistant (including trailing '/')",
+          "public_url": "Public Url to access Home Assistant (including trailing '/')",
           "include_devices": "Included device (comma separated)",
           "exclude_devices": "Excluded device (comma separated)",
           "scan_interval": "Seconds between scans",

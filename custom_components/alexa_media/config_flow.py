@@ -156,11 +156,7 @@ class AlexaMediaFlowHandler(config_entries.ConfigFlow):
         except NoURLAvailableError:
             hass_url = DEFAULT_HASS_URL
 
-        """ External URL for cloud connected services """
-        try:
-            DEFAULT_PUBLIC_URL: str = get_url(self.hass, allow_internal=False)
-        except NoURLAvailableError:
-            DEFAULT_PUBLIC_URL = ""
+        public_hass_url = get_url(self.hass, allow_internal=False)
 
         self.proxy_schema = OrderedDict(
             [
@@ -196,7 +192,7 @@ class AlexaMediaFlowHandler(config_entries.ConfigFlow):
                 (
                     vol.Optional(
                         CONF_PUBLIC_URL,
-                        default=self.config.get(CONF_PUBLIC_URL, DEFAULT_PUBLIC_URL),
+                        default=self.config.get(CONF_PUBLIC_URL, public_hass_url),
                     ),
                     str,
                 ),
@@ -356,9 +352,10 @@ class AlexaMediaFlowHandler(config_entries.ConfigFlow):
         """Start proxy for login."""
         # pylint: disable=unused-argument
         _LOGGER.debug(
-            "Starting proxy for %s - %s",
+            "Starting proxy for %s - %s.",
             hide_email(self.login.email),
             self.login.url,
+            self.config.get(CONF_HASS_URL),
         )
         if not self.proxy:
             try:
@@ -756,8 +753,8 @@ class AlexaMediaFlowHandler(config_entries.ConfigFlow):
             self.config[CONF_EMAIL] = user_input[CONF_EMAIL]
         if CONF_PASSWORD in user_input:
             self.config[CONF_PASSWORD] = user_input[CONF_PASSWORD]
-        if CONF_URL in user_input:
-            self.config[CONF_URL] = user_input[CONF_URL]
+        if CONF_HASS_URL in user_input:
+            self.config[CONF_HASS_URL] = user_input[CONF_HASS_URL]
         if CONF_PUBLIC_URL in user_input:
             self.config[CONF_PUBLIC_URL] = user_input[CONF_PUBLIC_URL]
         if CONF_SCAN_INTERVAL in user_input:
@@ -809,10 +806,12 @@ class AlexaMediaFlowHandler(config_entries.ConfigFlow):
                     default=self.securitycode if self.securitycode else "",
                 ): str,
                 vol.Required(
-                    CONF_OTPSECRET, default=self.config.get(CONF_OTPSECRET, "")
+                    CONF_OTPSECRET,
+                    default=self.config.get(CONF_OTPSECRET, ""),
                 ): str,
                 vol.Required(
-                    CONF_HASS_URL, default=self.config.get(CONF_HASS_URL, hass_url)
+                    CONF_HASS_URL,
+                    default=self.config.get(CONF_HASS_URL, DEFAULT_HASS_URL),
                 ): str,
                 vol.Optional(
                     CONF_PUBLIC_URL,
