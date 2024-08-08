@@ -28,7 +28,6 @@ from alexapy import (
 import async_timeout
 from homeassistant import util
 from homeassistant.components.persistent_notification import async_create, async_dismiss
-)
 from homeassistant.config_entries import SOURCE_IMPORT
 from homeassistant.const import (
     CONF_EMAIL,
@@ -47,7 +46,6 @@ from homeassistant.helpers.discovery import async_load_platform
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt, slugify
-from httpx import TimeoutException
 import voluptuous as vol
 
 from .alexa_entity import AlexaEntityData, get_entity_data, parse_alexa_entities
@@ -77,6 +75,7 @@ from .const import (
     SCAN_INTERVAL,
     STARTUP,
 )
+from .exceptions import TimeoutException
 from .helpers import (
     _catch_login_errors,
     _existing_serials,
@@ -905,6 +904,8 @@ async def setup_alexa(hass, config_entry, login_obj: AlexaLogin):
         This allows push notifications from Alexa to update last_called
         and media state.
         """
+        coordinator = hass.data[DATA_ALEXAMEDIA]["accounts"][email].get("coordinator")
+
         updates = (
             message_obj.get("directive", {})
             .get("payload", {})
@@ -926,7 +927,7 @@ async def setup_alexa(hass, config_entry, login_obj: AlexaLogin):
             seen_commands = hass.data[DATA_ALEXAMEDIA]["accounts"][email][
                 "http2_commands"
             ]
-            coord = hass.data[DATA_ALEXAMEDIA]["accounts"][email]["coordinator"]
+
             if command and json_payload:
                 _LOGGER.debug(
                     "%s: Received http2push command: %s : %s",
@@ -956,6 +957,7 @@ async def setup_alexa(hass, config_entry, login_obj: AlexaLogin):
                     json_payload["key"]["serialNumber"] = serial
                 else:
                     serial = None
+
                 if command == "PUSH_ACTIVITY":
                     #  Last_Alexa Updated
                     last_called = {
@@ -963,7 +965,9 @@ async def setup_alexa(hass, config_entry, login_obj: AlexaLogin):
                         "timestamp": json_payload["timestamp"],
                     }
                     try:
-                        await coord.async_request_refresh()
+                        if coordinator:
+                            await coordinator.async_request_refresh()
+
                         if serial and serial in existing_serials:
                             await update_last_called(login_obj, last_called)
                         _LOGGER.debug("Updating last_called: %s", last_called)
@@ -1132,9 +1136,6 @@ async def setup_alexa(hass, config_entry, login_obj: AlexaLogin):
                     (
                         hass.data[DATA_ALEXAMEDIA]["accounts"][email]["new_devices"]
                     ) = True
-                    coordinator = hass.data[DATA_ALEXAMEDIA]["accounts"][email].get(
-                        "coordinator"
-                    )
                     if coordinator:
                         await coordinator.async_request_refresh()
 
@@ -1200,7 +1201,6 @@ async def setup_alexa(hass, config_entry, login_obj: AlexaLogin):
                 "%s: HTTP2Push connection closed; retries exceeded; polling",
                 hide_email(email),
             )
-        coordinator = hass.data[DATA_ALEXAMEDIA]["accounts"][email].get("coordinator")
         if coordinator:
             coordinator.update_interval = timedelta(
                 seconds=scan_interval * 10 if http2_enabled else scan_interval
